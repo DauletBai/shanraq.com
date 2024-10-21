@@ -23,6 +23,10 @@ func main() {
 
 	router := routes.SetupRoutes(db)
 
+	// Serving static files
+	fileServer := http.FileServer(http.Dir("./static/assets"))
+	router.Handle("/assets/*", http.StripPrefix("/assets/", fileServer))
+
 	log.Printf("The server is running on the port %s", cfg.Server.Port)
 	if err := http.ListenAndServe(cfg.Server.Port, router); err != nil {
 		log.Fatalf("Server startup error: %v", err)
