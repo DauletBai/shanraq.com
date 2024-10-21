@@ -2,34 +2,58 @@ package config
 
 import (
 	"os"
+	"strconv"
 
-	"gopkg.in/yaml.v3"
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	Server struct {
-		Port string `yaml:"port"`
-	} `yaml:"server"`
-	Database struct {
-		Host     string `yaml:"host"`
-		Port     int    `yaml:"port"`
-		User     string `yaml:"user"`
-		Password string `yaml:"password"`
-		DBName   string `yaml:"dbname"`
-	} `yaml:"database"`
+	Server   ServerConfig
+	Database DBConfig
+	JWT      JWTConfig
+}
+
+type ServerConfig struct {
+	Port string
+}
+
+type DBConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
+	DBName   string
+}
+
+type JWTConfig struct {
+	Secret string
 }
 
 func LoadConfig() (*Config, error) {
-	file, err := os.Open("config.yaml")
+	// Loading .env file
+	if err := godotenv.Load(); err != nil {
+		return nil, err
+	}
+
+	port, err := strconv.Atoi(os.Getenv("DB_PORT"))
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
 
-	decoder := yaml.NewDecoder(file)
-	config := &Config{}
-	if err := decoder.Decode(config); err != nil {
-		return nil, err
+	config := &Config{
+		Server: ServerConfig{
+			Port: os.Getenv("SERVER_PORT"),
+		},
+		Database: DBConfig{
+			Host:     os.Getenv("DB_HOST"),
+			Port:     port,
+			User:     os.Getenv("DB_USER"),
+			Password: os.Getenv("DB_PASSWORD"),
+			DBName:   os.Getenv("DB_NAME"),
+		},
+		JWT: JWTConfig{
+			Secret: os.Getenv("JWT_SECRET"),
+		},
 	}
 
 	return config, nil

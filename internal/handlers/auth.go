@@ -2,16 +2,21 @@ package handlers
 
 import (
 	"net/http"
-	"strings"
 	"time"
+
+	"github.com/go-playground/validator/v10"
+	"shanraq.com/internal/models"
 )
 
 var validate = validator.New()
 
 type RegisterInput struct {
-	Gender string `json:"gender" validate:"required,oneof=male female"`
-	Birthday string `json:"birthday" validate:"required,datetime=2006-01-02"`
-	// ...
+	Gender    string `json:"gender" validate:"required,oneof=male female"`
+	Birthday  string `json:"birthday" validate:"required,datetime=2006-01-02"`
+	FirstName string `json:"first_name" validate:"required,alpha"`
+	LastName  string `json:"last_name" validate:"required,alpha"`
+	Phone     string `json:"phone" validate:"required,e164"`
+	Password  string `json:"password" validate:"required,email"`
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
