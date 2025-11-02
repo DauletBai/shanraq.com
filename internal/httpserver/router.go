@@ -29,7 +29,7 @@ func NewRouter(deps Deps) http.Handler {
 		MaxAge:           300,
 	}))
 
-	handlers.RegisterRoutes(r, deps.Config, deps.Logger, deps.Renderer)
+	handlers.RegisterRoutes(r, deps.Config, deps.Logger, deps.Renderer, deps.TransportService, deps.AgencyService, deps.ListingService, deps.AuthRegistry)
 
 	return r
 }

@@ -8,17 +8,25 @@ import (
 
 	"github.com/rs/zerolog"
 
+	"shanraq.com/internal/auth"
 	"shanraq.com/internal/config"
 	"shanraq.com/internal/httpserver"
 	"shanraq.com/internal/logging"
+	agencyservice "shanraq.com/internal/services/agency"
+	listingservice "shanraq.com/internal/services/listing"
+	transportservice "shanraq.com/internal/services/transport"
 	"shanraq.com/internal/web"
 )
 
 // App encapsulates the primary application lifecycle.
 type App struct {
-	cfg    config.Config
-	logger zerolog.Logger
-	server *httpserver.Server
+	cfg          config.Config
+	logger       zerolog.Logger
+	server       *httpserver.Server
+	transportSvc transportservice.Service
+	agencySvc    agencyservice.Service
+	listingSvc   listingservice.Service
+	authRegistry *auth.ProviderRegistry
 }
 
 // New wires the core application dependencies.
@@ -37,18 +45,34 @@ func New() (*App, error) {
 		return nil, fmt.Errorf("load templates: %w", err)
 	}
 
+	transportSvc := transportservice.NewInMemoryService()
+	agencySvc := agencyservice.NewInMemoryService()
+	listingSvc := listingservice.NewInMemoryService()
+	authRegistry := auth.NewRegistry(cfg.Auth.SupportedProviders...)
+	if cfg.Auth.Provider != "" {
+		authRegistry.Register(cfg.Auth.Provider, auth.NewNoopProvider())
+	}
+
 	router := httpserver.NewRouter(httpserver.Deps{
-		Logger:   logger,
-		Config:   cfg,
-		Renderer: renderer,
+		Logger:           logger,
+		Config:           cfg,
+		Renderer:         renderer,
+		TransportService: transportSvc,
+		AgencyService:    agencySvc,
+		ListingService:   listingSvc,
+		AuthRegistry:     authRegistry,
 	})
 
 	server := httpserver.New(cfg.HTTP, router, logger)
 
 	return &App{
-		cfg:    cfg,
-		logger: logger,
-		server: server,
+		cfg:          cfg,
+		logger:       logger,
+		server:       server,
+		transportSvc: transportSvc,
+		agencySvc:    agencySvc,
+		listingSvc:   listingSvc,
+		authRegistry: authRegistry,
 	}, nil
 }
 

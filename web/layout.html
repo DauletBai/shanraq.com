@@ -1,0 +1,17 @@
+{{ define "layout.html" }}
+<!doctype html>
+<html lang="en" data-bs-theme="{{ if .Theme }}{{ .Theme }}{{ else }}auto{{ end }}">
+  <head>
+    {{ template "partials/head" . }}
+  </head>
+  <body>
+    {{ template "partials/header" . }}
+    <main class="container py-5">
+      {{ block "content" . }}{{ end }}
+    </main>
+    {{ template "partials/footer" . }}
+    {{ template "partials/scripts" . }}
+    {{ block "page_scripts" . }}{{ end }}
+  </body>
+</html>
+{{ end }}

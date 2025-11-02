@@ -1,0 +1,160 @@
+{{ define "content" }}
+<section class="row align-items-center mb-5">
+  <div class="col-lg-6">
+    <h1 class="display-4 fw-bold mb-3">Discover global real estate without borders</h1>
+    <p class="lead text-body-secondary mb-4">
+      {{ .Description }} We blend trusted agencies, certified realtors, and relocation partners to help you relocate, invest, or launch projects anywhere in the world.
+    </p>
+    <div class="d-flex gap-3 flex-wrap">
+      <a class="btn btn-primary btn-lg" href="/dashboard/">Explore Dashboard</a>
+      <a class="btn btn-outline-secondary btn-lg" href="/api/v1/listings">Browse API Data</a>
+    </div>
+  </div>
+  <div class="col-lg-6 mt-4 mt-lg-0">
+    {{ if gt (len .FeaturedListings) 0 }}
+    {{ $hero := index .FeaturedListings 0 }}
+    <div class="card shadow-sm rounded-4 border">
+      {{ if $hero.Thumbnail }}
+      <img alt="{{ $hero.Title }}" class="card-img-top object-fit-cover opacity-50" height="300" src="{{ $hero.Thumbnail }}" onerror="this.src='/static/brand/logo_light.svg';">
+      {{ end }}
+      <div class="card-body">
+        <span class="badge text-bg-primary mb-2">Featured Listing</span>
+        <h2 class="h4 card-title">{{ $hero.Title }}</h2>
+        <p class="text-body-secondary mb-2">{{ $hero.Location }}</p>
+        <p class="card-text">{{ $hero.Summary }}</p>
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="fw-semibold">{{ $hero.Price }}</span>
+          <a class="icon-link icon-link-hover" href="{{ $hero.PropertyURL }}">
+            View details
+            <svg class="bi" aria-hidden="true"><use href="#chevron-right"></use></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    {{ end }}
+  </div>
+</section>
+
+<section class="mb-5" id="featured-listings">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h3 mb-0">Featured Listings</h2>
+    <a class="icon-link icon-link-hover" href="/api/v1/listings/featured">
+      View API
+      <svg class="bi" aria-hidden="true"><use href="#chevron-right"></use></svg>
+    </a>
+  </div>
+  <div class="row g-4">
+    {{ range $index, $listing := .FeaturedListings }}
+    {{ if gt $index 0 }}
+    <div class="col-sm-6 col-lg-4">
+      <div class="card h-100 shadow-sm rounded-4 border">
+        {{ if $listing.Thumbnail }}
+        <img alt="{{ $listing.Title }}" class="card-img-top object-fit-cover opacity-50" height="240" src="{{ $listing.Thumbnail }}" onerror="this.src='/static/brand/logo_light.svg';">
+        {{ end }}
+        <div class="card-body d-flex flex-column">
+          <span class="badge text-bg-light text-uppercase mb-2">{{ $listing.Price }}</span>
+          <h3 class="h5 card-title">{{ $listing.Title }}</h3>
+          <p class="text-body-secondary mb-3">{{ $listing.Location }}</p>
+          <p class="card-text flex-grow-1">{{ $listing.Summary }}</p>
+          <a class="btn btn-sm btn-outline-primary mt-3 align-self-start" href="{{ $listing.PropertyURL }}">View details</a>
+        </div>
+      </div>
+    </div>
+    {{ end }}
+    {{ end }}
+  </div>
+</section>
+
+<section class="mb-5" id="agencies">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h3 mb-0">Global Agencies</h2>
+    <a class="icon-link icon-link-hover" href="/api/v1/agencies">
+      All agencies
+      <svg class="bi" aria-hidden="true"><use href="#chevron-right"></use></svg>
+    </a>
+  </div>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+    {{ range .FeaturedAgencies }}
+    <div class="col">
+      <div class="card h-100 shadow-sm border">
+        <div class="card-body">
+          <span class="badge text-bg-secondary mb-2">{{ .Country }}</span>
+          <h3 class="h5 card-title">{{ .Name }}</h3>
+          <p class="card-text">{{ .Tagline }}</p>
+          <a class="icon-link icon-link-hover" href="{{ .Website }}" target="_blank" rel="noopener">
+            Visit website
+            <svg class="bi" aria-hidden="true"><use href="#chevron-right"></use></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    {{ end }}
+  </div>
+</section>
+
+<section class="mb-5" id="realtors">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h3 mb-0">Trusted Realtors</h2>
+    <a class="icon-link icon-link-hover" href="/api/v1/agencies/realtors">
+      Meet the team
+      <svg class="bi" aria-hidden="true"><use href="#chevron-right"></use></svg>
+    </a>
+  </div>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+    {{ range .FeaturedRealtors }}
+    <div class="col">
+      <div class="card h-100 border rounded-3 shadow-sm">
+        <div class="card-body">
+          <h3 class="h5 card-title mb-1">{{ .Name }}</h3>
+          <p class="text-body-secondary mb-1">{{ .Agency }}</p>
+          <p class="mb-1"><strong>Region:</strong> {{ .Region }}</p>
+          <p class="mb-1"><strong>Languages:</strong> {{ range $i, $lang := .Languages }}{{ if $i }}, {{ end }}{{ $lang }}{{ end }}</p>
+          <a class="icon-link icon-link-hover" href="mailto:{{ .Email }}">
+            Contact
+            <svg class="bi" aria-hidden="true"><use href="#chevron-right"></use></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    {{ end }}
+  </div>
+</section>
+
+<section class="mb-5" id="logistics">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h3 mb-0">Logistics &amp; Moving Partners</h2>
+    <a class="icon-link icon-link-hover" href="/api/v1/transport-companies">
+      Partner directory
+      <svg class="bi" aria-hidden="true"><use href="#chevron-right"></use></svg>
+    </a>
+  </div>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+    {{ range .FeaturedTransport }}
+    <div class="col">
+      <div class="card h-100 border rounded-3 shadow-sm">
+        <div class="card-body">
+          <span class="badge text-bg-light text-uppercase mb-2">{{ .CountryCode }}</span>
+          <h3 class="h5 card-title">{{ .Name }}</h3>
+          <p class="mb-2"><strong>Coverage:</strong> {{ range $i, $region := .Coverage }}{{ if $i }}, {{ end }}{{ $region }}{{ end }}</p>
+          <p class="mb-0"><strong>Services:</strong> {{ range $i, $svc := .Services }}{{ if $i }}, {{ end }}{{ $svc }}{{ end }}</p>
+        </div>
+      </div>
+    </div>
+    {{ end }}
+  </div>
+</section>
+
+<section class="bg-body-secondary rounded-4 p-4 p-md-5">
+  <div class="row align-items-center">
+    <div class="col-lg-8">
+      <h2 class="h3 fw-bold mb-3">Connect your brokerage, realty team, or logistics firm</h2>
+      <p class="mb-0 text-body-secondary">
+        Shanraq already integrates Google, Meta, Apple, LinkedIn, and e-mail authentication flows. Request sandbox access to publish listings, manage mandates, and sync relocation pipelines.
+      </p>
+    </div>
+    <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+      <a class="btn btn-lg btn-primary" href="mailto:partners@shanraq.com">Request onboarding</a>
+    </div>
+  </div>
+</section>
+{{ end }}

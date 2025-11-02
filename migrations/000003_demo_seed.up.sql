@@ -1,0 +1,82 @@
+INSERT INTO real_estate_agencies (name, slug, tagline, country_code, website, logo_url, head_office)
+VALUES
+    ('Shanraq Global Realty', 'shanraq-global-realty', 'Luxury Estates Across Continents', 'AE', 'https://shanraq.com/agency/global', '/static/brand/logo_light.svg', 'Dubai, UAE'),
+    ('Nordic Skyline Partners', 'nordic-skyline-partners', 'Scandinavian waterfront & alpine living', 'SE', 'https://shanraq.com/agency/nordic-skyline', NULL, 'Stockholm, Sweden'),
+    ('Pacifica Urban Advisors', 'pacifica-urban-advisors', 'Smart investments across the Pacific Rim', 'US', 'https://shanraq.com/agency/pacifica-urban', NULL, 'San Francisco, USA'),
+    ('Atlas Heritage Homes', 'atlas-heritage-homes', 'Historic residences and cultural landmarks', 'IT', 'https://shanraq.com/agency/atlas-heritage', NULL, 'Florence, Italy')
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO realtors (agency_id, full_name, email, phone, languages, region, photo_url)
+VALUES
+    ((SELECT id FROM real_estate_agencies WHERE slug = 'shanraq-global-realty'), 'Layla Al-Mansouri', 'layla@shanraq.com', '+971-4-555-0147', ARRAY['Arabic','English','Hindi'], 'Middle East & North Africa', NULL),
+    ((SELECT id FROM real_estate_agencies WHERE slug = 'nordic-skyline-partners'), 'Karl Johansson', 'karl@nordicskyline.com', '+46-8-777-9911', ARRAY['Swedish','Norwegian','English'], 'Nordics & Northern Europe', NULL),
+    ((SELECT id FROM real_estate_agencies WHERE slug = 'pacifica-urban-advisors'), 'Maya Chen', 'maya@pacificaurban.com', '+1-415-555-0901', ARRAY['English','Mandarin'], 'Pacific Rim & Silicon Valley', NULL),
+    ((SELECT id FROM real_estate_agencies WHERE slug = 'atlas-heritage-homes'), 'Giulia Romano', 'giulia@atlasheritage.it', '+39-055-555-221', ARRAY['Italian','English','French'], 'Southern Europe & Mediterranean', NULL),
+    ((SELECT id FROM real_estate_agencies WHERE slug = 'pacifica-urban-advisors'), 'Diego Alvarez', 'diego@pacificaurban.com', '+56-1-555-1758', ARRAY['Spanish','English'], 'Latin America & US Sunbelt', NULL)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO property_listings (
+    agency_id, title, slug, summary, listing_type, country_code, city, region, neighborhood,
+    price, currency, bedrooms, bathrooms, area_sqm, hero_image_url, details_url, tags
+) VALUES
+    ((SELECT id FROM real_estate_agencies WHERE slug = 'shanraq-global-realty'),
+        'Palm Jumeirah Sky Villa', 'palm-jumeirah-sky-villa',
+        'Four-bedroom duplex with private infinity pool and uninterrupted Gulf views.',
+        'residential', 'AE', 'Dubai', 'Dubai', 'Palm Jumeirah',
+        6800000, 'USD', 4, 4.5, 620,
+        'https://images.shanraq.com/demo/palm-jumeirah.jpg', '/listings/palm-jumeirah-sky-villa', ARRAY['waterfront','smart-home','penthouse']),
+    ((SELECT id FROM real_estate_agencies WHERE slug = 'nordic-skyline-partners'),
+        'Östermalm Art Nouveau Residence', 'ostermalm-art-nouveau',
+        'Restored 1903 apartment with modern energy systems and winter garden.',
+        'residential', 'SE', 'Stockholm', 'Stockholm County', 'Östermalm',
+        14500000, 'SEK', 3, 2, 210,
+        'https://images.shanraq.com/demo/ostermalm.jpg', '/listings/ostermalm-art-nouveau', ARRAY['heritage','city-center']),
+    ((SELECT id FROM real_estate_agencies WHERE slug = 'pacifica-urban-advisors'),
+        'Kyoto Machiya Boutique Hotel', 'kyoto-machiya-boutique-hotel',
+        'Six-key licensed machiya hotel blending traditional architecture with modern amenities.',
+        'commercial', 'JP', 'Kyoto', 'Kansai', 'Gion',
+        215000000, 'JPY', 6, 6.5, 380,
+        'https://images.shanraq.com/demo/kyoto-machiya.jpg', '/listings/kyoto-machiya-hotel', ARRAY['hospitality','licensed','turnkey']),
+    ((SELECT id FROM real_estate_agencies WHERE slug = 'pacifica-urban-advisors'),
+        'Lisbon Digital District Loft', 'lisbon-digital-district-loft',
+        'Smart loft with Tagus river views, co-working mezzanine, and EV-ready parking.',
+        'residential', 'PT', 'Lisbon', 'Lisbon', 'Parque das Nações',
+        890000, 'EUR', 2, 2, 165,
+        'https://images.shanraq.com/demo/lisbon-loft.jpg', '/listings/lisbon-digital-loft', ARRAY['smart-home','waterfront','digital-nomad']),
+    ((SELECT id FROM real_estate_agencies WHERE slug = 'atlas-heritage-homes'),
+        'Tuscany Heritage Vineyard Estate', 'tuscany-heritage-vineyard-estate',
+        'Organic DOCG vineyard with 18th-century villa, guest suites, and agritourism permit.',
+        'commercial', 'IT', 'Siena', 'Tuscany', 'Chianti Classico',
+        6200000, 'EUR', 8, 7, 950,
+        'https://images.shanraq.com/demo/tuscany-vineyard.jpg', '/listings/tuscany-heritage-vineyard', ARRAY['vineyard','heritage','agritourism']),
+    ((SELECT id FROM real_estate_agencies WHERE slug = 'shanraq-global-realty'),
+        'Singapore Sky Garden Duplex', 'singapore-sky-garden-duplex',
+        'Biophilic duplex with hydroponic greenhouse, concierge robotics, and Marina skyline views.',
+        'residential', 'SG', 'Singapore', 'Central Region', 'Marina Bay',
+        12800000, 'SGD', 4, 4, 420,
+        'https://images.shanraq.com/demo/singapore-sky-garden.jpg', '/listings/singapore-sky-garden', ARRAY['biophilic','city-center']),
+    ((SELECT id FROM real_estate_agencies WHERE slug = 'nordic-skyline-partners'),
+        'Reykjavík Geothermal Retreat', 'reykjavik-geothermal-retreat',
+        'Net-zero villa with geothermal spa wing, aurora lounge, and drone landing pad.',
+        'residential', 'IS', 'Reykjavík', 'Capital Region', 'Mosfellsbær',
+        325000000, 'ISK', 5, 4, 480,
+        'https://images.shanraq.com/demo/reykjavik-retreat.jpg', '/listings/reykjavik-geothermal-retreat', ARRAY['net-zero','luxury','spa']),
+    ((SELECT id FROM real_estate_agencies WHERE slug = 'shanraq-global-realty'),
+        'Cape Town Atlantic Seaboard Villa', 'cape-town-atlantic-seaboard-villa',
+        'Secure cliffside villa with desalination system, solar microgrid, and cinematic pavilion.',
+        'residential', 'ZA', 'Cape Town', 'Western Cape', 'Bantry Bay',
+        39500000, 'ZAR', 6, 6.5, 720,
+        'https://images.shanraq.com/demo/capetown-villa.jpg', '/listings/cape-town-atlantic-villa', ARRAY['coastal','security','solar']),
+    ((SELECT id FROM real_estate_agencies WHERE slug = 'pacifica-urban-advisors'),
+        'São Paulo Innovation Hub Loft', 'sao-paulo-innovation-hub-loft',
+        'Adaptive reuse warehouse with 5G infrastructure, studios, and data lounge.',
+        'commercial', 'BR', 'São Paulo', 'São Paulo', 'Vila Olímpia',
+        11800000, 'BRL', 0, 4, 980,
+        'https://images.shanraq.com/demo/sao-paulo-hub.jpg', '/listings/sao-paulo-innovation-hub', ARRAY['innovation','mixed-use']),
+    ((SELECT id FROM real_estate_agencies WHERE slug = 'nordic-skyline-partners'),
+        'British Columbia Wilderness Lodge', 'british-columbia-wilderness-lodge',
+        'Heli-access eco lodge with 12 guest suites, carbon-negative design, and heli pads.',
+        'commercial', 'CA', 'Whistler', 'British Columbia', 'Callaghan Valley',
+        8600000, 'CAD', 12, 12, 1250,
+        'https://images.shanraq.com/demo/bc-wilderness.jpg', '/listings/bc-wilderness-lodge', ARRAY['eco','adventure','hospitality'])
+ON CONFLICT (slug) DO NOTHING;

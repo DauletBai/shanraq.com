@@ -57,12 +57,13 @@ type (
 	}
 
 	Auth struct {
-		Provider       string   `envconfig:"PROVIDER" default:"auth0"`
-		ClientID       string   `envconfig:"CLIENT_ID"`
-		ClientSecret   string   `envconfig:"CLIENT_SECRET"`
-		CallbackURL    string   `envconfig:"CALLBACK_URL" default:"http://localhost:8080/auth/callback"`
-		AllowedDomains []string `envconfig:"ALLOWED_DOMAINS"`
-		JWTSigningKey  string   `envconfig:"JWT_SIGNING_KEY" default:"development-secret"`
+		Provider           string   `envconfig:"PROVIDER" default:"auth0"`
+		SupportedProviders []string `envconfig:"SUPPORTED_PROVIDERS" default:"google,meta,linkedin,apple,email"`
+		ClientID           string   `envconfig:"CLIENT_ID"`
+		ClientSecret       string   `envconfig:"CLIENT_SECRET"`
+		CallbackURL        string   `envconfig:"CALLBACK_URL" default:"http://localhost:8080/auth/callback"`
+		AllowedDomains     []string `envconfig:"ALLOWED_DOMAINS"`
+		JWTSigningKey      string   `envconfig:"JWT_SIGNING_KEY" default:"development-secret"`
 	}
 
 	Geo struct {
