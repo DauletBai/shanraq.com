@@ -1,14 +1,14 @@
 package listing
 
 import (
-    "context"
-    "database/sql"
-    "encoding/json"
-    "errors"
-    "fmt"
-    "strings"
+	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"strings"
 
-    "github.com/google/uuid"
+	"github.com/google/uuid"
 )
 
 type sqlService struct {
@@ -178,12 +178,12 @@ func (s *sqlService) Get(ctx context.Context, id uuid.UUID) (Listing, error) {
 			&record.AgencyID,
 			&agencyName,
 		)
-    if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
-            return Listing{}, fmt.Errorf("listing %s not found", id)
-        }
-        return Listing{}, err
-    }
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Listing{}, fmt.Errorf("listing %s not found", id)
+		}
+		return Listing{}, err
+	}
 	record.Price = price.Float64
 	record.Bathrooms = bathrooms.Float64
 	record.AreaSqM = area.Float64

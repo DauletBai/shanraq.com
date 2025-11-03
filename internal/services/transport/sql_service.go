@@ -140,7 +140,7 @@ func (s *sqlService) Create(ctx context.Context, input CreateInput) (Company, er
 }
 
 func (s *sqlService) Get(ctx context.Context, id uuid.UUID) (Company, error) {
-    row := s.db.QueryRowContext(ctx, `
+	row := s.db.QueryRowContext(ctx, `
         SELECT id, name, slug, country_code,
                COALESCE(array_to_json(coverage_regions)::text, '[]'),
                COALESCE(array_to_json(services_offered)::text, '[]'),
@@ -148,14 +148,14 @@ func (s *sqlService) Get(ctx context.Context, id uuid.UUID) (Company, error) {
                created_at, updated_at
         FROM transport_companies
         WHERE id = $1`, id)
-    company, err := scanCompany(row)
-    if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
-            return Company{}, ErrNotFound
-        }
-        return Company{}, err
-    }
-    return company, nil
+	company, err := scanCompany(row)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Company{}, ErrNotFound
+		}
+		return Company{}, err
+	}
+	return company, nil
 }
 
 func (s *sqlService) Update(ctx context.Context, id uuid.UUID, input UpdateInput) (Company, error) {
@@ -244,14 +244,14 @@ func (s *sqlService) Update(ctx context.Context, id uuid.UUID, input UpdateInput
 }
 
 func (s *sqlService) Delete(ctx context.Context, id uuid.UUID) error {
-    result, err := s.db.ExecContext(ctx, `DELETE FROM transport_companies WHERE id = $1`, id)
-    if err != nil {
-        return err
-    }
-    if rows, _ := result.RowsAffected(); rows == 0 {
-        return ErrNotFound
-    }
-    return nil
+	result, err := s.db.ExecContext(ctx, `DELETE FROM transport_companies WHERE id = $1`, id)
+	if err != nil {
+		return err
+	}
+	if rows, _ := result.RowsAffected(); rows == 0 {
+		return ErrNotFound
+	}
+	return nil
 }
 
 func (s *sqlService) generateUniqueSlug(ctx context.Context, base string) (string, error) {

@@ -41,6 +41,10 @@ h1, h2, h3, h4, h5, h6 {
 /* Navigation underline enhancements */
 [data-nav-behavior="underline-toggle"] {
   position: relative;
+  --nav-underline-width: 0px;
+  --nav-underline-x: 0px;
+  --nav-underline-color: transparent;
+  --nav-underline-opacity: 0;
 }
 
 [data-nav-behavior="underline-toggle"] .nav-link {
@@ -48,30 +52,26 @@ h1, h2, h3, h4, h5, h6 {
   transition: color 0.2s ease;
 }
 
-[data-nav-behavior="underline-toggle"] .nav-underline-indicator {
+[data-nav-behavior="underline-toggle"]::after {
+  content: "";
   position: absolute;
+  left: var(--nav-underline-x);
   bottom: 0;
-  left: 0;
-  width: 0;
+  width: var(--nav-underline-width);
   height: 0.2rem;
   border-radius: 999px;
-  background-color: var(--bs-primary);
-  transform: translateX(0);
+  background-color: var(--nav-underline-color);
+  opacity: var(--nav-underline-opacity);
   transition:
-    transform 0.25s ease,
+    left 0.25s ease,
     width 0.25s ease,
     background-color 0.25s ease,
     opacity 0.2s ease;
   pointer-events: none;
-  opacity: 0;
-  will-change: transform, width;
   z-index: 1;
 }
 
-[data-nav-behavior="underline-toggle"].nav-underline-enabled .nav-underline-indicator.is-visible {
-  opacity: 1;
+[data-nav-behavior="underline-toggle"].nav-underline-enabled::after {
+  opacity: var(--nav-underline-opacity);
 }
 
-[data-nav-behavior="underline-toggle"].nav-underline .nav-link.active {
-  border-bottom: none !important;
-}

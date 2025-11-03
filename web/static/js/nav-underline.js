@@ -10,12 +10,6 @@
       return;
     }
 
-    nav.classList.remove("nav-underline", "nav-underline-enabled");
-
-    var indicator = document.createElement("span");
-    indicator.className = "nav-underline-indicator";
-    nav.appendChild(indicator);
-
     var activeLink = null;
     var sectionEntries = [];
     var scrollOffset = 0;
@@ -45,20 +39,28 @@
       sectionEntries.sort(function (a, b) {
         return a.top - b.top;
       });
+      resetIndicator();
+    };
+
+    var resetIndicator = function () {
+      nav.style.setProperty("--nav-underline-width", "0px");
+      nav.style.setProperty("--nav-underline-x", "0px");
+      nav.style.setProperty("--nav-underline-opacity", "0");
+      nav.style.setProperty("--nav-underline-color", "transparent");
     };
 
     var moveIndicator = function (link) {
       if (!link) {
-        indicator.style.width = "0px";
-        indicator.classList.remove("is-visible");
+        resetIndicator();
         return;
       }
       var width = link.offsetWidth;
       var left = link.offsetLeft;
-      indicator.style.width = width + "px";
-      indicator.style.transform = "translateX(" + left + "px)";
-      indicator.style.backgroundColor = window.getComputedStyle(link).color;
-      indicator.classList.add("is-visible");
+      var color = window.getComputedStyle(link).color;
+      nav.style.setProperty("--nav-underline-width", width + "px");
+      nav.style.setProperty("--nav-underline-x", left + "px");
+      nav.style.setProperty("--nav-underline-color", color);
+      nav.style.setProperty("--nav-underline-opacity", "1");
     };
 
     var setActiveLink = function (link, options) {
@@ -74,7 +76,7 @@
       links.forEach(function (item) {
         item.classList.toggle("active", item === link);
       });
-      nav.classList.add("nav-underline", "nav-underline-enabled");
+      nav.classList.add("nav-underline-enabled");
       moveIndicator(link);
     };
 
@@ -164,6 +166,8 @@
 
     if (initialLink) {
       setActiveLink(initialLink, { force: true });
+    } else {
+      resetIndicator();
     }
 
     updateActiveFromScroll();
