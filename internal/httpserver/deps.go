@@ -4,10 +4,12 @@ import (
 	"github.com/rs/zerolog"
 
 	"shanraq.com/internal/auth"
+	"shanraq.com/internal/auth/session"
 	"shanraq.com/internal/config"
 	agencyservice "shanraq.com/internal/services/agency"
 	listingservice "shanraq.com/internal/services/listing"
 	transportservice "shanraq.com/internal/services/transport"
+	workspaceservice "shanraq.com/internal/services/workspace"
 	"shanraq.com/internal/web"
 )
 
@@ -20,4 +22,6 @@ type Deps struct {
 	AgencyService    agencyservice.Service
 	ListingService   listingservice.Service
 	AuthRegistry     *auth.ProviderRegistry
+	SessionManager   *session.Manager
+	WorkspaceService workspaceservice.Service
 }

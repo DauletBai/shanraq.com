@@ -10,11 +10,12 @@ import (
 	"github.com/rs/zerolog"
 
 	"shanraq.com/internal/auth"
+	"shanraq.com/internal/auth/session"
 	"shanraq.com/internal/config"
 )
 
 // Router exposes auth related endpoints (login, callback, logout) for multiple providers.
-func Router(cfg config.Config, logger zerolog.Logger, registry *auth.ProviderRegistry) chi.Router {
+func Router(cfg config.Config, logger zerolog.Logger, registry *auth.ProviderRegistry, sessions *session.Manager) chi.Router {
 	if registry == nil {
 		registry = auth.NewRegistry()
 	}
@@ -81,6 +82,14 @@ func Router(cfg config.Config, logger zerolog.Logger, registry *auth.ProviderReg
 				return
 			}
 
+			if sessions != nil {
+				if _, err := sessions.Create(w, identity); err != nil {
+					logger.Error().Err(err).Msg("create_session_failed")
+					respondJSON(w, http.StatusInternalServerError, map[string]string{"error": "session_error"})
+					return
+				}
+			}
+
 			respondJSON(w, http.StatusOK, map[string]any{
 				"state":    state,
 				"identity": identity,
@@ -97,9 +106,24 @@ func Router(cfg config.Config, logger zerolog.Logger, registry *auth.ProviderReg
 			respondJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid_return_url"})
 			return
 		}
+		if sessions != nil {
+			sessions.Destroy(w, r)
+		}
 		respondJSON(w, http.StatusOK, map[string]string{
 			"message":    "logged_out",
 			"return_url": returnURL,
+		})
+	})
+
+	r.Get("/session", func(w http.ResponseWriter, r *http.Request) {
+		if sessions == nil {
+			respondJSON(w, http.StatusOK, map[string]any{"authenticated": false})
+			return
+		}
+		identity, ok := sessions.Identity(r)
+		respondJSON(w, http.StatusOK, map[string]any{
+			"authenticated": ok,
+			"identity":      identity,
 		})
 	})
 

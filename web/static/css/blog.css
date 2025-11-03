@@ -37,3 +37,41 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 1.25rem;
   color: #727272;
 }
+
+/* Navigation underline enhancements */
+[data-nav-behavior="underline-toggle"] {
+  position: relative;
+}
+
+[data-nav-behavior="underline-toggle"] .nav-link {
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+[data-nav-behavior="underline-toggle"] .nav-underline-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 0.2rem;
+  border-radius: 999px;
+  background-color: var(--bs-primary);
+  transform: translateX(0);
+  transition:
+    transform 0.25s ease,
+    width 0.25s ease,
+    background-color 0.25s ease,
+    opacity 0.2s ease;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, width;
+  z-index: 1;
+}
+
+[data-nav-behavior="underline-toggle"].nav-underline-enabled .nav-underline-indicator.is-visible {
+  opacity: 1;
+}
+
+[data-nav-behavior="underline-toggle"].nav-underline .nav-link.active {
+  border-bottom: none !important;
+}

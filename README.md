@@ -10,7 +10,25 @@ Shanraq is an international real-estate platform that connects property owners, 
 - Static assets and dashboard prototype mounted directly from the `web` directory.
 - Multi-provider auth facade prepared for Google, Meta, Apple, LinkedIn, e-mail magic links, and a primary provider (`AUTH_PROVIDER`).
 - Landing page renders seeded demo data (agencies, realtors, moving partners, and 10 international listings) for quick UX validation.
+- Demo OAuth providers (Google, Meta, Apple, LinkedIn, Email) with in-memory session management enable local login flows and personal workspaces.
 - Server-side templating powered by Go `html/template` with a shared layout (`web/layout.html`), modular partials, and per-page views under `web/pages/` for easy expansion.
+
+## Templating Guidelines
+
+- All views extend `web/layout.html`, which renders common partials (`web/partials/*.html`) and exposes a `{{ block "content" . }}` for page-specific markup.
+- New pages live in `web/pages/*.html`. Define a `{{ define "content" }}` block in each page so it is injected automatically by the layout.
+- When adding custom scripts for a page, wrap them in `{{ define "page_scripts" }}` to ensure they are appended after the shared bundle.
+- The renderer clones the base layout/partials for every request; tests (`internal/web/templates_test.go`) exercise `RenderHome` to catch structural regressions early.
+
+## Demo Auth & Sessions
+
+- `/auth/{provider}/login` simulates OAuth consent and immediately redirects back to the callback with a generated identity.
+- Sessions are tracked in-memory via cookies and exposed through `/auth/session` for debugging.
+- Protected workspace APIs under `/api/v1/workspaces` require authentication and return per-user business plan dashboards.
+
+## Data Pipelines
+
+- Skeleton ingestion pipelines live under `internal/pipelines/geo` and `internal/pipelines/logistics`; each exposes a `Run` method and unit tests to validate orchestration.
 
 ## Project Layout
 

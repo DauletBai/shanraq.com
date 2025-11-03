@@ -2,6 +2,7 @@ package public
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog"
@@ -30,7 +31,7 @@ func Router(
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if renderer != nil {
 			data := &web.HomePageData{}
-			data.BrandName = cfg.App.Name
+			data.BrandName = strings.Title(strings.TrimSpace(cfg.App.Name))
 			data.PageTitle = "Global Real Estate Platform · "
 			data.Description = "Discover, list, and manage properties and logistics partners across the world with Shanraq."
 			data.PageID = "home"

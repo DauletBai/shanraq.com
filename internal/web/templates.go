@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -40,12 +41,15 @@ type HomePageData struct {
 }
 
 // NewRenderer parses templates from the web directory.
+
 func NewRenderer() (*Renderer, error) {
+	webRoot := locateWebDir()
+	fsys := os.DirFS(webRoot)
+
 	tmpl := template.New("layout.html").Funcs(template.FuncMap{
 		"statusColor": statusColor,
 	})
 
-	fsys := os.DirFS("web")
 	parsed, err := tmpl.ParseFS(fsys,
 		"layout.html",
 		"partials/*.html",
@@ -104,6 +108,27 @@ func (r *Renderer) Unwrap() *template.Template {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.base
+}
+
+func locateWebDir() string {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "web"
+	}
+
+	for i := 0; i < 10; i++ {
+		candidate := filepath.Join(wd, "web")
+		if _, statErr := os.Stat(filepath.Join(candidate, "layout.html")); statErr == nil {
+			return candidate
+		}
+		parent := filepath.Dir(wd)
+		if parent == wd {
+			break
+		}
+		wd = parent
+	}
+
+	return "web"
 }
 
 func statusColor(status string) string {

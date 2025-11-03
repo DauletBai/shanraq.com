@@ -8,6 +8,7 @@ import (
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 
+	"shanraq.com/internal/auth/session"
 	"shanraq.com/internal/httpserver/handlers"
 	"shanraq.com/internal/httpserver/middlewares"
 )
@@ -21,6 +22,9 @@ func NewRouter(deps Deps) http.Handler {
 	r.Use(middlewares.RequestLogger(deps.Logger))
 	r.Use(chimiddleware.Recoverer)
 	r.Use(chimiddleware.Timeout(60 * time.Second))
+	if deps.SessionManager != nil {
+		r.Use(session.Middleware(deps.SessionManager))
+	}
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   deps.Config.HTTP.AllowedOrigins,
 		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodPatch, http.MethodOptions},
@@ -29,7 +33,7 @@ func NewRouter(deps Deps) http.Handler {
 		MaxAge:           300,
 	}))
 
-	handlers.RegisterRoutes(r, deps.Config, deps.Logger, deps.Renderer, deps.TransportService, deps.AgencyService, deps.ListingService, deps.AuthRegistry)
+	handlers.RegisterRoutes(r, deps.Config, deps.Logger, deps.Renderer, deps.TransportService, deps.AgencyService, deps.ListingService, deps.AuthRegistry, deps.SessionManager, deps.WorkspaceService)
 
 	return r
 }

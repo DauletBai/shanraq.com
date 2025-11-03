@@ -2,19 +2,24 @@ package app
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/rs/zerolog"
 
 	"shanraq.com/internal/auth"
+	"shanraq.com/internal/auth/session"
 	"shanraq.com/internal/config"
+	"shanraq.com/internal/database"
 	"shanraq.com/internal/httpserver"
 	"shanraq.com/internal/logging"
 	agencyservice "shanraq.com/internal/services/agency"
 	listingservice "shanraq.com/internal/services/listing"
 	transportservice "shanraq.com/internal/services/transport"
+	workspaceservice "shanraq.com/internal/services/workspace"
 	"shanraq.com/internal/web"
 )
 
@@ -23,10 +28,13 @@ type App struct {
 	cfg          config.Config
 	logger       zerolog.Logger
 	server       *httpserver.Server
+	db           *sql.DB
 	transportSvc transportservice.Service
 	agencySvc    agencyservice.Service
 	listingSvc   listingservice.Service
 	authRegistry *auth.ProviderRegistry
+	sessions     *session.Manager
+	workspaces   workspaceservice.Service
 }
 
 // New wires the core application dependencies.
@@ -45,13 +53,42 @@ func New() (*App, error) {
 		return nil, fmt.Errorf("load templates: %w", err)
 	}
 
-	transportSvc := transportservice.NewInMemoryService()
-	agencySvc := agencyservice.NewInMemoryService()
-	listingSvc := listingservice.NewInMemoryService()
-	authRegistry := auth.NewRegistry(cfg.Auth.SupportedProviders...)
-	if cfg.Auth.Provider != "" {
-		authRegistry.Register(cfg.Auth.Provider, auth.NewNoopProvider())
+	var transportSvc transportservice.Service = transportservice.NewInMemoryService()
+	var agencySvc agencyservice.Service = agencyservice.NewInMemoryService()
+	var listingSvc listingservice.Service = listingservice.NewInMemoryService()
+	var workspaceSvc workspaceservice.Service = workspaceservice.NewInMemoryService()
+
+	var db *sql.DB
+	if cfg.Database.URL != "" {
+		if conn, err := database.Connect(context.Background(), cfg.Database); err != nil {
+			logger.Warn().Err(err).Msg("database connection failed; using in-memory services")
+		} else {
+			db = conn
+			if svc, err := transportservice.NewSQLService(conn); err != nil {
+				logger.Warn().Err(err).Msg("init transport sql service")
+			} else {
+				transportSvc = svc
+			}
+			if svc, err := agencyservice.NewSQLService(conn); err != nil {
+				logger.Warn().Err(err).Msg("init agency sql service")
+			} else {
+				agencySvc = svc
+			}
+			if svc, err := listingservice.NewSQLService(conn); err != nil {
+				logger.Warn().Err(err).Msg("init listing sql service")
+			} else {
+				listingSvc = svc
+			}
+		}
 	}
+	authRegistry := auth.NewRegistry(cfg.Auth.SupportedProviders...)
+	for _, name := range cfg.Auth.SupportedProviders {
+		authRegistry.Register(name, auth.NewDemoOAuthProvider(name))
+	}
+	if cfg.Auth.Provider != "" {
+		authRegistry.Register(cfg.Auth.Provider, auth.NewDemoOAuthProvider(cfg.Auth.Provider))
+	}
+	sessionManager := session.NewManager(12*time.Hour, "")
 
 	router := httpserver.NewRouter(httpserver.Deps{
 		Logger:           logger,
@@ -61,6 +98,8 @@ func New() (*App, error) {
 		AgencyService:    agencySvc,
 		ListingService:   listingSvc,
 		AuthRegistry:     authRegistry,
+		SessionManager:   sessionManager,
+		WorkspaceService: workspaceSvc,
 	})
 
 	server := httpserver.New(cfg.HTTP, router, logger)
@@ -69,10 +108,13 @@ func New() (*App, error) {
 		cfg:          cfg,
 		logger:       logger,
 		server:       server,
+		db:           db,
 		transportSvc: transportSvc,
 		agencySvc:    agencySvc,
 		listingSvc:   listingSvc,
 		authRegistry: authRegistry,
+		sessions:     sessionManager,
+		workspaces:   workspaceSvc,
 	}, nil
 }
 
@@ -91,6 +133,11 @@ func (a *App) Run(ctx context.Context) error {
 		a.logger.Info().Msg("shutdown signal received")
 		if err := a.server.Shutdown(context.Background()); err != nil {
 			return fmt.Errorf("shutdown http server: %w", err)
+		}
+		if a.db != nil {
+			if err := a.db.Close(); err != nil {
+				a.logger.Warn().Err(err).Msg("close database")
+			}
 		}
 		return nil
 

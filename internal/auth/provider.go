@@ -3,6 +3,8 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
+	"net/url"
 	"sort"
 	"strings"
 	"sync"
@@ -100,3 +102,41 @@ func (r *ProviderRegistry) List() []string {
 func normalizeName(name string) string {
 	return strings.ToLower(strings.TrimSpace(name))
 }
+
+// DemoOAuthProvider simulates an OAuth provider for local development.
+type DemoOAuthProvider struct {
+	name string
+}
+
+// NewDemoOAuthProvider returns a provider that instantly redirects to callback with a synthetic identity.
+func NewDemoOAuthProvider(name string) Provider {
+	return &DemoOAuthProvider{name: normalizeName(name)}
+}
+
+func (d *DemoOAuthProvider) AuthCodeURL(state string) (string, error) {
+	values := url.Values{}
+	values.Set("code", fmt.Sprintf("demo-%s-user", d.name))
+	if state != "" {
+		values.Set("state", state)
+	}
+	return fmt.Sprintf("/auth/%s/callback?%s", d.name, values.Encode()), nil
+}
+
+func (d *DemoOAuthProvider) Exchange(_ context.Context, code string) (Identity, error) {
+	code = strings.TrimSpace(code)
+	if code == "" {
+		return Identity{}, errors.New("invalid code")
+	}
+	subject := fmt.Sprintf("demo-%s-%s", d.name, strings.ReplaceAll(code, " ", "-"))
+	email := fmt.Sprintf("%s@demo.shanraq.com", strings.ReplaceAll(code, " ", "-"))
+	fullName := strings.Title(strings.ReplaceAll(strings.TrimPrefix(code, "demo-"), "-", " "))
+	return Identity{
+		Subject:     subject,
+		Email:       email,
+		FullName:    fullName,
+		Provider:    d.name,
+		AccessToken: fmt.Sprintf("token-%s", code),
+	}, nil
+}
+
+var _ Provider = (*DemoOAuthProvider)(nil)
